@@ -1,0 +1,3 @@
+city = ["Omsk","Kazan","Moscow","Rome"]
+freq = 60
+day = 3

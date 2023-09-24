@@ -1,0 +1,4 @@
+add_executable(labwork_10_LomanTrue2 main.cpp)
+
+target_link_libraries(labwork_10_LomanTrue2 request)
+target_include_directories(labwork_10_LomanTrue2 PRIVATE ${PROJECT_SOURCE_DIR})
