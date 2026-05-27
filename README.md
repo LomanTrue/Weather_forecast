@@ -82,11 +82,23 @@ abcDEF123yourApiKey456ghiJKL
 
 ### Получение зависимостей
 
-В `CMakeLists.txt` библиотеки cpr и nlohmann/json подключаются через `add_subdirectory(cpr)` и `add_subdirectory(json)`. Положите их в корень проекта:
+В `CMakeLists.txt` библиотеки cpr и nlohmann/json подключаются через `add_subdirectory(cpr)` и `add_subdirectory(json)`. Скачать и подключить их можно двумя способами. Первый - вручную, положите их в корень проекта:
 
 ```bash
 git clone https://github.com/libcpr/cpr.git
 git clone https://github.com/nlohmann/json.git
+```
+
+Второй через клонирование с подмодулями
+ 
+```bash
+git clone --recurse-submodules https://github.com/LomanTrue/Weather_forecast.git
+```
+ 
+Если репозиторий уже склонирован без `--recurse-submodules` — подтяните подмодули отдельно:
+ 
+```bash
+git submodule update --init --recursive
 ```
 
 ### Сборка
