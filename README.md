@@ -1,21 +1,132 @@
 # Weather forecast
 
-This is a console programm that displays weather forecast
+Консольное приложение на C++ для отображения прогноза погоды в нескольких городах. Подтягивает данные с публичных API, парсит JSON, обновляет экран с заданной периодичностью и реагирует на клавиатуру.
 
-Project uses external libraries such as:
-- cpr (https://github.com/libcpr/cpr)
-- json (https://github.com/nlohmann/json)
+## Возможности
 
-Also project use an API for weather forecast.
-Used websites:
-- open-meteo (https://open-meteo.com/en/docs#latitude=59.94&longitude=30.31&hourly=temperature_2m&forecast_days=16)
-- API-ninja (https://api-ninjas.com/api/city)
+- Прогноз погоды на 1–16 дней вперёд для произвольного списка городов
+- Список городов, период обновления и количество дней по умолчанию задаются в конфиге
+- Автоматическое обновление данных с заданной частотой
+- Управление с клавиатуры:
+  - n/p — следующий/предыдущий город
+  - +/- — увеличить/уменьшить количество дней прогноза (1 ≤ дней ≤ 16)
+  - Esc — выход
+- Устойчивость к сетевым ошибкам и невалидным ответам API: приложение не падает при таймаутах, отказах сервиса и неизвестных названиях городов
 
-# Configuration
+## Скриншот
 
-'config.txt' has initial data, namely cities (or city) and the number of days in the forecast. This file is OMFL file
+[Interface](interface.png)
 
-While the program is running, you can:
-- switch cities using a key 'p' (previous city) and 'n' (next city)
-- increase and decrease the number of days in the forecast using a key '+' and '-'. Max - 16 days, min - 1 day
-- stop the programm using a key 'Esc'
+## Стек
+
+- **C++20**
+- **CMake** ≥ 3.15
+- **[cpr](https://github.com/libcpr/cpr)** — HTTP-клиент (C++ Requests)
+- **[nlohmann/json](https://github.com/nlohmann/json)** — парсинг JSON
+- **OMFL** — формат конфигурационного файла
+
+## Источники данных
+
+| API | Назначение | Ключ |
+|-----|------------|------|
+| [Open-Meteo](https://open-meteo.com/) | Прогноз погоды по координатам | Не требуется |
+| [API Ninjas — City API](https://api-ninjas.com/api/city) | Координаты по названию города | Требуется |
+
+## Структура проекта
+
+```
+Weather_forecast/
+├── bin/             # Точка входа (main, цикл приложения, рендер)
+├── lib/             # Логика: парсер конфига, HTTP-клиенты к API, обработка ответов
+├── cpr/             # Внешняя зависимость (cpr)
+├── json/            # Внешняя зависимость (nlohmann/json)
+├── config.txt       # Пользовательский конфиг
+├── secrets.txt      # Файл с API-ключом
+└── CMakeLists.txt
+```
+
+## Конфигурация
+
+### config.txt
+ 
+Файл в формате OMFL:
+ 
+```omfl
+city = ["Omsk","Kazan","Moscow","Rome"]
+freq = 60
+day = 3
+```
+ 
+| Поле | Тип | Значение |
+|------|-----|----------|
+| `city` | список строк | Города, между которыми переключается приложение |
+| `freq` | int | Период автоматического обновления данных в секундах |
+| `day` | int | Количество дней прогноза по умолчанию (1–16) |
+ 
+### secrets.txt
+ 
+Отдельный файл с API-ключом от [API Ninjas](https://api-ninjas.com/) — одна строка с ключом. Хранится отдельно от исходников и от `config.txt`, чтобы ключ не попадал в репозиторий. Пример:
+ 
+```
+abcDEF123yourApiKey456ghiJKL
+```
+
+## Сборка
+
+### Требования
+
+- C++ компилятор с поддержкой C++20 (GCC 10+, Clang 11+, MSVC 19.29+)
+- CMake ≥ 3.15
+- Подключение к интернету при первом запуске (для скачивания зависимостей через cpr) и при работе приложения
+- API-ключ от [API Ninjas](https://api-ninjas.com/) (бесплатная регистрация)
+
+### Получение зависимостей
+
+В `CMakeLists.txt` библиотеки cpr и nlohmann/json подключаются через `add_subdirectory(cpr)` и `add_subdirectory(json)`. Положите их в корень проекта одним из способов:
+
+```bash
+git clone https://github.com/libcpr/cpr.git
+git clone https://github.com/nlohmann/json.git
+```
+
+### Сборка
+
+```bash
+git clone https://github.com/LomanTrue/Weather_forecast.git
+cd Weather_forecast
+mkdir build && cd build
+cmake ..
+cmake --build .
+```
+
+После сборки исполняемый файл появится в `build/`.
+
+## Запуск
+ 
+Приложение запускается из консоли с двумя обязательными аргументами — путём к файлу конфигурации и путём к файлу с API-ключом:
+ 
+```
+weather_forecast.exe <путь к config.txt> <путь к secrets.txt>
+```
+ 
+**Пример (Windows):**
+ 
+```
+D:\Weather_forecast\build\weather_forecast.exe D:\Weather_forecast\config.txt D:\Weather_forecast\secrets.txt
+```
+ 
+**Пример (Linux / macOS):**
+ 
+```bash
+./weather_forecast /home/user/Weather_forecast/config.txt /home/user/Weather_forecast/secrets.txt
+```
+ 
+Пути можно указывать как абсолютные, так и относительные (относительно текущей рабочей директории).
+
+## Особенности реализации
+
+Несколько технических моментов, на которые стоит обратить внимание:
+
+- **Двухступенчатая работа с API.** Чтобы получить прогноз для города, сначала выполняется запрос к City API (название → координаты), затем результат подставляется в запрос к Open-Meteo. Для каждого нового города в сессии выполняется не более одного запроса геокодирования — координаты кэшируются.
+- **Обработка ошибок сети.** HTTP-запросы через cpr оборачиваются в проверки кода ответа и валидности JSON; при отказе сервиса или невалидном ответе приложение продолжает работать и показывает последние известные данные
+- **Чтение клавиатуры без блокировки** — основной цикл должен одновременно слушать ввод пользователя и обновлять данные по таймеру; это сделано через неблокирующее чтение терминала.
