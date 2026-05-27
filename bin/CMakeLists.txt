@@ -1,4 +1,4 @@
-add_executable(labwork_10_LomanTrue2 main.cpp)
+add_executable(weather_forecast main.cpp)
 
-target_link_libraries(labwork_10_LomanTrue2 request)
-target_include_directories(labwork_10_LomanTrue2 PRIVATE ${PROJECT_SOURCE_DIR})
+target_link_libraries(weather_forecast request)
+target_include_directories(weather_forecast PRIVATE ${PROJECT_SOURCE_DIR})
