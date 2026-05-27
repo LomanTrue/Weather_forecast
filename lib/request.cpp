@@ -1,8 +1,8 @@
 #include "request.h"
 
-int Req::ReqLoc() {
+int Req::ReqLoc(std::string& api_key) {
   cpr::Response r = cpr::Get(cpr::Url{"https://api.api-ninjas.com/v1/city"},
-                             cpr::Header{{"X-Api-Key", "Dq+UmRTnmmQ+43FJIhYDWA==3TwImS3NkQL3Cunq"}},
+                             cpr::Header{{"X-Api-Key", api_key}},
                              cpr::Parameters{{"name", city}});
 
   if (r.text == "[]") {

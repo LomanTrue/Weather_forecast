@@ -20,12 +20,26 @@ std::wstring HourInfo::DisplayCode() {
     res = L"Облачно      ";
   } else if (code == 45) {
     res = L"Дымка        ";
+  } else if (code == 51) {
+    res = L"Слабая морось";
+  } else if (code == 53) {
+    res = L"Морось       ";
+  } else if (code == 55) {
+    res = L"Сил. морось  ";
   } else if (code == 61) {
     res = L"Небол. дождь ";
   } else if (code == 63) {
     res = L"Дождь        ";
   } else if (code == 65) {
     res = L"Сильный дождь";
+  } else if (code == 71) {
+    res = L"Лег. снегопад";
+  } else if (code == 73) {
+    res = L"Снегопад     ";
+  } else if (code == 75) {
+    res = L"Сил. снегопад";
+  } else if (code == 77) {
+    res = L"Зерновой снег";
   } else if (code == 80) {
     res = L"Слабый ливень";
   } else if (code == 81) {
@@ -73,14 +87,14 @@ std::wstring HourInfo::DisplayImage(uint8_t i) {
                             ,L"  _ - _ - _ -  "
                             ,L"               "};
     return image[i];
-  } else if (code == 61 || code == 63 || code == 65 || code == 80 || code == 81 || code == 82) {
+  } else if (code == 51 || code == 53 || code == 55 || code == 61 || code == 63 || code == 65 || code == 80 || code == 81 || code == 82) {
     std::wstring image[5] = {L"      .-.      "
                             ,L"    (    ).    "
                             ,L"   (___(__)    "
                             ,L"    / / / /    "
                             ,L"  / / / /      "};
     return image[i];
-  } else if (code == 85 || code == 86) {
+  } else if (code == 71 || code == 73 || code == 75 || code == 77 || code == 85 || code == 86) {
     std::wstring image[5] = {L"      .-.      "
                             ,L"    (    ).    "
                             ,L"   (___(__)    "
@@ -422,10 +436,16 @@ int JsonParse(nlohmann::json* data, WeatherInfo* city) {
   return 0;
 }
 
-int Weather(std::filesystem::path path) {
-  OMFLParser parser = parse(path);
+int Weather(std::filesystem::path config_path, std::filesystem::path api_key_path) {
+  OMFLParser parser = parse(config_path);
   WeatherInfo cur_city;
   int cur_i = 0;
+
+  std::ifstream file;
+  file.open(api_key_path);
+  std::string api_key;
+  std::getline(file, api_key);
+  file.close();
 
   cur_city.num_d = parser.Get("day").AsInt();
   bool is_array = parser.Get("city").IsArray();
@@ -442,7 +462,7 @@ int Weather(std::filesystem::path path) {
   nlohmann::json data;
   while (true) {
     Req req_city(arr_city[cur_i]);
-    if (!req_city.ReqLoc()) {
+    if (!req_city.ReqLoc(api_key)) {
       req_city.ReqWeather(&data, cur_city.num_d);
     } else {
       std::cerr << "Error" << '\n';
