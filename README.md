@@ -15,7 +15,7 @@
 
 ## Скриншот
 
-[Interface](interface.png)
+![Interface](interface.png)
 
 ## Стек
 
@@ -82,7 +82,7 @@ abcDEF123yourApiKey456ghiJKL
 
 ### Получение зависимостей
 
-В `CMakeLists.txt` библиотеки cpr и nlohmann/json подключаются через `add_subdirectory(cpr)` и `add_subdirectory(json)`. Положите их в корень проекта одним из способов:
+В `CMakeLists.txt` библиотеки cpr и nlohmann/json подключаются через `add_subdirectory(cpr)` и `add_subdirectory(json)`. Положите их в корень проекта:
 
 ```bash
 git clone https://github.com/libcpr/cpr.git
